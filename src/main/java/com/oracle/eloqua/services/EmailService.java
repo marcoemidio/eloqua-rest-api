@@ -14,21 +14,38 @@ import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.oracle.eloqua.beans.EmailLowVolumeDeployment;
+import com.oracle.eloqua.handler.RestTemplateResponseErrorHandler;
+
+
 @Service
 public class EmailService {
 	
 	private static final Logger log = LoggerFactory.getLogger(EmailService.class);
 	
-	private final RestTemplate restTemplate;
+	private RestTemplate restTemplate;
 	
 	@Value("${operations.serviceurl.get.assetsemaildeploymentid}")
 	String assetsEmailDeploymentIdUrl;
 	
-	// property injection must be done after constructor. solution is to annotate the constructor parasm with @Value 
+	@Value("${operations.serviceurl.post.assetsemaildeployment}")
+	String assetsEmailDeploymentUrl; 
+	
+	// property injection must be done after constructor. found solution is to annotate the constructor params with @Value 
 	public EmailService(RestTemplateBuilder restTemplateBuilder, 
 			@Value("${operations.username}") String username,
 			@Value("${operations.password}") String password) {
+		
+		// adds basic authentication do RestTemplate
 		this.restTemplate = restTemplateBuilder.basicAuthentication(username, password).build();
+		
+		// adds custom response error handler to RestTemplate
+		this.restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
+		
+		//this.restTemplate = restTemplateBuilder.errorHandler(new RestTemplateResponseErrorHandler()).build();
 	}
 	
 	/*
@@ -68,21 +85,32 @@ public class EmailService {
 	
 	// Eloqua HTTP POST method to send an e-mail
 	public void postEmailDeployment(Message<List<Map<String, Object>>> msg) throws IOException, IllegalArgumentException{
-		
 		List<Map<String, Object>> rows = msg.getPayload();
         
 		for (Map<String, Object> row : rows) {
-            int id = (int) row.get("id");
+			int id = (int) row.get("id");
             String name = (String) row.get("name");
             String payload = (String) row.get("payload");
             log.info("##  polled email " + id + " - " + name + " - " + payload);
-	        
-	        	        
-	        ResponseEntity<String> response = restTemplate.postForEntity(assetsEmailDeploymentIdUrl, payload ,String.class);
-	        
-	        log.info(response.getStatusCode().toString());
-	        log.info(response.getBody());
-	        
+    		
+            try {            
+	    		ObjectMapper mapper = new ObjectMapper();
+	    		EmailLowVolumeDeployment requestPayload = mapper.readValue(payload, EmailLowVolumeDeployment.class);
+	    		
+	    		log.info(requestPayload.toString());
+        
+		        ResponseEntity<String> response = restTemplate.postForEntity(assetsEmailDeploymentUrl, requestPayload, String.class);
+		        
+		        log.info(response.getStatusCode().toString());
+		        log.info(response.getBody());
+
+			} catch (JsonGenerationException e) {
+				e.printStackTrace();
+			} catch (JsonMappingException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 	        
         }   
     }
