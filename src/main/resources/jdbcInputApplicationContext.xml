@@ -15,16 +15,16 @@
             http://www.springframework.org/schema/jdbc
             http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd">
  
-    <int-jdbc:inbound-channel-adapter id="dataChannel"
-        query="select * from email_tbl where status = 1 " data-source="dataSource"
-        update="update email_tbl set status = 5 where id in (:id)"> 
+    <int-jdbc:inbound-channel-adapter id="inputDataChannel"
+        query="select * from email_tbl where status = 'INIT'" data-source="dataSource"
+        update="update email_tbl set status = 'POLLED' where id in (:id)"> 
         <int:poller fixed-rate="1000" />
     </int-jdbc:inbound-channel-adapter>
  
     <int:poller default="true" fixed-rate="100" />
    	
-   	<int:service-activator id="sendEmailServiceActivator" input-channel="dataChannel"
-                                   ref="sendEmailService" method="sendEmail"/>
+   	<int:service-activator id="postEmailDeploymentServiceActivator" input-channel="inputDataChannel"
+                                   ref="emailService" method="postEmailDeployment"/>
  
     <bean id="dataSource"
         class="org.springframework.jdbc.datasource.DriverManagerDataSource">
