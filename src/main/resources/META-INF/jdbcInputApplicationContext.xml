@@ -13,8 +13,12 @@
             http://www.springframework.org/schema/integration/jdbc
             http://www.springframework.org/schema/integration/jdbc/spring-integration-jdbc.xsd
             http://www.springframework.org/schema/jdbc
-            http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd">
- 
+            http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd
+            http://www.springframework.org/schema/context
+            http://www.springframework.org/schema/context/spring-context.xsd">
+ 	
+ 	<context:property-placeholder location="classpath:application.properties" />
+ 	
     <int-jdbc:inbound-channel-adapter id="inputDataChannel"
         query="select * from email_tbl where status = 'INIT'" data-source="dataSource"
         update="update email_tbl set status = 'POLLED' where id in (:id)"> 
@@ -28,9 +32,9 @@
  
     <bean id="dataSource"
         class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
-        <property name="url" value="jdbc:sqlserver://localhost:1433;databaseName=eloquadb" />
-        <property name="username" value="oracle" />
-        <property name="password" value="welcome1" />
+        <property name="driverClassName" value="${spring.datasource.driverClassName}" />
+        <property name="url" value="${spring.datasource.url}" />
+        <property name="username" value="${spring.datasource.username}" />
+        <property name="password" value="${spring.datasource.password}" />
     </bean>
 </beans>

@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.oracle.eloqua.beans.EmailLowVolumeDeployment;
 import com.oracle.eloqua.handler.RestTemplateResponseErrorHandler;
 
@@ -44,23 +45,10 @@ public class EmailService {
 		
 		// adds custom response error handler to RestTemplate
 		this.restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
-		
-		//this.restTemplate = restTemplateBuilder.errorHandler(new RestTemplateResponseErrorHandler()).build();
 	}
-	
-	/*
-	@Bean
-	public RestTemplate rest() {
-		return new RestTemplate();
-	}
-	
-	@Bean
-	public RestTemplate restTemplate(RestTemplateBuilder builder) {
-		return builder.basicAuthentication(username, password).build();
-	}*/
-	
+
 	// Eloqua HTTP GET method to obtain an e-mail by {id}
-	public void getEmailDeployment(Message<List<Map<String, Object>>> msg) throws IOException, IllegalArgumentException{
+	public void getEmailDeployment(Message<List<Map<String, Object>>> msg) {
 		
 		List<Map<String, Object>> rows = msg.getPayload();
         
@@ -78,13 +66,12 @@ public class EmailService {
 	        
 	        log.info(response.getStatusCode().toString());
 	        log.info(response.getBody());
-	        
-	        
+
         }   
     }
 	
 	// Eloqua HTTP POST method to send an e-mail
-	public void postEmailDeployment(Message<List<Map<String, Object>>> msg) throws IOException, IllegalArgumentException{
+	public void postEmailDeployment(Message<List<Map<String, Object>>> msg) {
 		List<Map<String, Object>> rows = msg.getPayload();
         
 		for (Map<String, Object> row : rows) {
@@ -103,13 +90,13 @@ public class EmailService {
 		        
 		        log.info(response.getStatusCode().toString());
 		        log.info(response.getBody());
-
+		        
 			} catch (JsonGenerationException e) {
-				e.printStackTrace();
+				log.info("Error generating JSON object: " + e.getMessage());
 			} catch (JsonMappingException e) {
-				e.printStackTrace();
+				log.info("Error mapping JSON object: " + e.getMessage());
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.info("IOException : " + e.getMessage());
 			}
 	        
         }   

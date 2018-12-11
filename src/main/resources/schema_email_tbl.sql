@@ -9,3 +9,10 @@ CREATE TABLE [dbo].[email_tbl](
 	[id] ASC
 )WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+CREATE UNIQUE NONCLUSTERED INDEX 
+    email_tbl_idx 
+    on email_tbl (id);
+CREATE NONCLUSTERED INDEX
+	email_tbl_status_idx
+	on email_tbl (status);
