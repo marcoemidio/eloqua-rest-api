@@ -1,6 +1,7 @@
 package com.oracle.eloqua.controller;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,6 +56,15 @@ public class EmailController {
 		
 		// adds custom response error handler to RestTemplate
 		this.restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
+
+		this.restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+	}
+	
+	protected HttpHeaders getHttpHeaders() {
+		HttpHeaders requestHeaders = new HttpHeaders();
+		requestHeaders.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+		requestHeaders.set("Authorization", token);
+		return requestHeaders;
 	}
 	
 	@RequestMapping(value="/assets/email/{id}", method = RequestMethod.GET)
@@ -67,7 +78,9 @@ public class EmailController {
 		ObjectMapper mapper = new ObjectMapper();		
 		EmailLowVolumeDeployment requestPayload = mapper.readValue(record.getPayload(), EmailLowVolumeDeployment.class);
 		
-        ResponseEntity<String> response = restTemplate.postForEntity(assetsEmailDeploymentUrl, requestPayload, String.class);
+		HttpEntity<EmailLowVolumeDeployment> httpEntity = new HttpEntity<>(requestPayload, getHttpHeaders());
+		
+        ResponseEntity<String> response = restTemplate.exchange(assetsEmailDeploymentUrl, HttpMethod.POST, httpEntity, String.class);
         
         log.info(response.getStatusCode().toString());
         log.info(response.getBody());
