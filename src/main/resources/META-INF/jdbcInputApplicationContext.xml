@@ -29,7 +29,27 @@
    	
    	<int:service-activator id="postEmailDeploymentServiceActivator" input-channel="inputDataChannel"
                                    ref="emailService" method="postEmailDeployment"/>
- 
+ 	
+ 	<!-- validate later this usage -->
+ 	<!--int:gateway id="emailDeploymentGateway" service-interface="com.oracle.eloqua.interface.EmailDeploymentInterface"></int:gateway>
+ 	
+ 	<int:channel id="updateStatusChannel"/>
+ 	
+ 	<int-jdbc:outbound-channel-adapter id="updateDatabaseChannel"
+                                       channel="updateStatusChannel"
+                                       data-source="dataSource"
+                                       sql-parameter-source-factory="sqlParameterSource"
+                                       query="update email_tbl set status = :status where id in (:id)"/>
+ 	
+ 	<bean id="sqlParameterSource"   class="org.springframework.integration.jdbc.ExpressionEvaluatingSqlParameterSourceFactory">
+        <property name="parameterExpressions">
+            <map>
+                <entry key="status" value="payload.status"/>
+                <entry key="id" value="payload.id"/>
+            </map>
+        </property>
+    </bean-->								
+ 	
     <bean id="dataSource"
         class="org.springframework.jdbc.datasource.DriverManagerDataSource">
         <property name="driverClassName" value="${spring.datasource.driverClassName}" />
