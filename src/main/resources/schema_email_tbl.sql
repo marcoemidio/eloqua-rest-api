@@ -1,4 +1,4 @@
-CREATE TABLE [dbo].[email_tbl](
+CREATE TABLE [email_tbl](
 	[id] [int] NOT NULL,
 	[status] [varchar](50) NULL,
 	[name] [varchar](50) NULL,

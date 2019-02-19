@@ -19,6 +19,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -29,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.oracle.eloqua.beans.EmailLowVolumeDeployment;
 import com.oracle.eloqua.domain.EmailDeployment;
+import com.oracle.eloqua.exception.EntityNotFoundException;
 import com.oracle.eloqua.handler.RestTemplateResponseErrorHandler;
 import com.oracle.eloqua.repository.EmailDeploymentRepository;
 
@@ -69,32 +71,22 @@ public class EmailService {
 		
 		// adds custom response error handler to RestTemplate
 		this.restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
-		
 		this.restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
 	}
-
-	// Eloqua HTTP GET method to obtain an e-mail by {id}
-	public void getEmailDeployment(Message<List<Map<String, Object>>> msg) {
+	
+	/**
+     * Returns an EmailDeployment object from database.
+     *
+     * @param emailId 
+     * @return the EmailDeployment object
+     */
+	public EmailDeployment getEloquaEmail(int emailId) throws EntityNotFoundException, CannotGetJdbcConnectionException  {
+		EmailDeployment emailDpl = emailDeploymentRepository.findById(emailId);
+		if (emailDpl == null)
+			throw new EntityNotFoundException(EmailDeployment.class, "id", Integer.toString(emailId));
 		
-		List<Map<String, Object>> rows = msg.getPayload();
-        
-		for (Map<String, Object> row : rows) {
-            int id = (int) row.get("id");
-            String name = (String) row.get("name");
-            String payload = (String) row.get("payload");
-            log.info("##  polled email " + id + " - " + name + " - " + payload);
-	        
-	        Map<String, Object> params = new HashMap<>();
-	        params.put("id", 4);
-	        log.info("id: " + id);
-	        
-	        ResponseEntity<String> response = restTemplate.getForEntity(assetsEmailDeploymentIdUrl, String.class, params);
-	        
-	        log.info(response.getStatusCode().toString());
-	        log.info(response.getBody());
-
-        }   
-    }
+		return emailDpl;
+	}
 	
 	// Eloqua HTTP POST method to send an e-mail
 	public void postEmailDeployment(Message<List<Map<String, Object>>> msg) {

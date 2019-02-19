@@ -2,7 +2,10 @@ package com.oracle.eloqua.domain;
 
 import javax.persistence.*;
 
+import lombok.Data;
+
 @Entity
+@Data
 @Table(name = "email_tbl")
 public class EmailDeployment {
 	@Id
@@ -12,11 +15,12 @@ public class EmailDeployment {
 	private String name;
 	private String type;
 	private String payload;
-
+	
+	//default constructor
 	public EmailDeployment() {
 	}
 
-	public int getId() {
+	/*public int getId() {
 		return id;
 	}
 
@@ -54,6 +58,6 @@ public class EmailDeployment {
 
 	public void setEmail(String payload) {
 		this.payload = payload;
-	}
+	}*/
 	
 }
